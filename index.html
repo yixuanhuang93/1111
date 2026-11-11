@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>校園熱搜隊：校園地表溫度探索與互動學習</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome 圖示庫 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <!-- Chart.js 圖表庫 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+    body { font-family: 'Noto Sans TC', sans-serif; background-color: #0f172a; color: #f8fafc; }
+    .bg-main-green { background-color: #10b981; }
+    .text-main-green { color: #10b981; }
+    .border-main-green { border-color: #10b981; }
+    .nav-active { background-color: #047857 !important; color: #ffffff !important; font-weight: bold; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+  <!-- 頂部導覽列 (五大系統分頁對應設計圖) -->
+  <header class="bg-slate-900 border-b border-emerald-900/60 sticky top-0 z-50 shadow-lg">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+        <div class="bg-emerald-500 text-slate-950 p-2.5 rounded-xl font-black text-xl flex items-center justify-center shadow-md">
+          <i class="fa-solid fa-temperature-high"></i>
+        </div>
+        <div>
+          <h1 class="font-black text-xl text-emerald-400 tracking-wide">校園熱搜隊</h1>
+          <p class="text-xs text-slate-400">校園地表溫度探索與互動學習</p>
+        </div>
+      </div>
+      <!-- 導覽按鈕群 -->
+      <nav class="flex flex-wrap gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-xs md:text-sm">
+        <button id="nav-home" onclick="switchTab('home')" class="nav-btn nav-active px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+          <i class="fa-solid fa-house"></i> 首頁
+        </button>
+        <button id="nav-map" onclick="switchTab('map')" class="nav-btn px-3 py-2 rounded-lg text-slate-300 hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-location-dot"></i> 地圖探索
+        </button>
+        <button id="nav-record" onclick="switchTab('record')" class="nav-btn px-3 py-2 rounded-lg text-slate-300 hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-pen-to-square"></i> 數據紀錄
+        </button>
+        <button id="nav-analysis" onclick="switchTab('analysis')" class="nav-btn px-3 py-2 rounded-lg text-slate-300 hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-column"></i> 資料分析
+        </button>
+        <button id="nav-learn" onclick="switchTab('learn')" class="nav-btn px-3 py-2 rounded-lg text-slate-300 hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-book-open"></i> 互動教材
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 主要內容顯示區域 -->
+  <main class="max-w-6xl mx-auto w-full p-4 md:p-6 flex-grow">
+
+    <!-- 頁面 1: 首頁 (系統入口) -->
+    <section id="page-home" class="space-y-8 animate-fadeIn">
+      <!-- Banner 區 -->
+      <div class="relative bg-gradient-to-r from-emerald-900/90 via-slate-900 to-cyan-950 p-8 md:p-12 rounded-3xl border border-emerald-500/30 shadow-2xl overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+        <div class="space-y-4 max-w-xl z-10">
+          <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase">
+            淡江大學淡水校園 數位探究系統
+          </span>
+          <h2 class="text-3xl md:text-5xl font-black text-white leading-tight">
+            校園熱搜隊<br/>
+            <span class="text-emerald-400">校園哪裡最涼快？</span>
+          </h2>
+          <p class="text-slate-300 text-sm md:text-base leading-relaxed">
+            運用 GPS 定位與紅外線測溫槍，探索校園地表溫度變化，進行數據記錄、圖表分析與成果分享！
+          </p>
+          <div class="pt-2">
+            <button onclick="switchTab('map')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-4 rounded-2xl text-lg shadow-lg hover:shadow-emerald-500/20 transition flex items-center gap-3">
+              <span>開始探索</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+        <div class="relative w-full md:w-80 h-64 bg-slate-800/80 rounded-2xl border border-slate-700/80 p-4 flex flex-col justify-center items-center text-center shadow-inner">
+          <i class="fa-solid fa-map-location-dot text-6xl text-emerald-400 mb-3 animate-pulse"></i>
+          <p class="text-sm font-bold text-slate-200">GPS 自由採樣 × 地表溫度探究</p>
+          <p class="text-xs text-slate-400 mt-1">在校園中，走到哪、測到哪！</p>
+        </div>
+      </div>
+
+      <!-- 4 大功能模組卡片 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div onclick="switchTab('map')" class="bg-slate-800/70 border border-slate-700/70 hover:border-emerald-500/60 p-6 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 shadow-lg group">
+          <div class="bg-emerald-500/10 text-emerald-400 w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:bg-emerald-500 group-hover:text-slate-950 transition">
+            <i class="fa-solid fa-map-marked-alt"></i>
+          </div>
+          <h3 class="font-bold text-lg text-white mb-1">地圖探索</h3>
+          <p class="text-xs text-slate-400">GPS 定位與動態採樣點展示</p>
+        </div>
+
+        <div onclick="switchTab('record')" class="bg-slate-800/70 border border-slate-700/70 hover:border-emerald-500/60 p-6 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 shadow-lg group">
+          <div class="bg-emerald-500/10 text-emerald-400 w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:bg-emerald-500 group-hover:text-slate-950 transition">
+            <i class="fa-solid fa-clipboard-list"></i>
+          </div>
+          <h3 class="font-bold text-lg text-white mb-1">數據紀錄</h3>
+          <p class="text-xs text-slate-400">測量溫度、材質與日照條件輸入</p>
+        </div>
+
+        <div onclick="switchTab('analysis')" class="bg-slate-800/70 border border-slate-700/70 hover:border-emerald-500/60 p-6 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 shadow-lg group">
+          <div class="bg-emerald-500/10 text-emerald-400 w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:bg-emerald-500 group-hover:text-slate-950 transition">
+            <i class="fa-solid fa-chart-pie"></i>
+          </div>
+          <h3 class="font-bold text-lg text-white mb-1">成果分析</h3>
+          <p class="text-xs text-slate-400">自動計算平均值與直觀長條圖</p>
+        </div>
+
+        <div onclick="switchTab('learn')" class="bg-slate-800/70 border border-slate-700/70 hover:border-emerald-500/60 p-6 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 shadow-lg group">
+          <div class="bg-emerald-500/10 text-emerald-400 w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:bg-emerald-500 group-hover:text-slate-950 transition">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <h3 class="font-bold text-lg text-white mb-1">互動教材</h3>
+          <p class="text-xs text-slate-400">概念學習、互動問答與探究任務</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 頁面 2: 校園探索地圖 (GPS 定位 + 採樣點) -->
+    <section id="page-map" class="hidden space-y-6">
+      <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 bg-slate-800/80 p-5 rounded-2xl border border-slate-700">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-location-crosshairs text-emerald-400"></i>
+            校園探索地圖
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">點擊地圖即時採樣或新增數據紀錄</p>
+        </div>
+        <button onclick="switchTab('record')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-sm transition flex items-center justify-center gap-2 shadow">
+          <i class="fa-solid fa-plus"></i> 新增採樣點
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- 控制與資訊側欄 -->
+        <div class="space-y-4">
+          <!-- GPS 定位區 -->
+          <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 space-y-3">
+            <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-satellite"></i> GPS 定位區
+            </h3>
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1 text-xs">
+              <div class="flex justify-between text-slate-400"><span>目前位置：</span><span class="text-emerald-400 font-semibold">已連線</span></div>
+              <div class="flex justify-between"><span>緯度：</span><strong id="gps-lat" class="font-mono text-slate-200">25.1750° N</strong></div>
+              <div class="flex justify-between"><span>經度：</span><strong id="gps-lng" class="font-mono text-slate-200">121.4480° E</strong></div>
+              <div class="flex justify-between text-slate-500"><span>精度：</span><span>±5 m</span></div>
+            </div>
+            <button onclick="updateGPS()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-rotate"></i> 更新位置
+            </button>
+          </div>
+
+          <!-- 圖層顯示篩選 -->
+          <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 space-y-3">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">圖層顯示</h3>
+            <div class="space-y-2 text-xs">
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="checkbox" checked class="rounded accent-emerald-500">
+                <span>我的採樣點</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="checkbox" checked class="rounded accent-emerald-500">
+                <span>地表溫度熱區</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="checkbox" class="rounded accent-emerald-500">
+                <span>校園設施</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 擬真模擬地圖面板 -->
+        <div class="lg:col-span-3 bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden relative min-h-[420px] flex flex-col justify-between p-4" style="background: radial-gradient(circle, #1e293b 10%, #0f172a 90%);">
+          <div class="flex justify-between items-start z-10">
+            <span class="bg-slate-900/90 text-xs px-3 py-1.5 rounded-full border border-slate-700 text-slate-300">
+              📍 淡江大學淡水校園
+            </span>
+            <!-- 地圖圖例 -->
+            <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-700 text-xs space-y-1">
+              <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> 日照 (鋪面)</div>
+              <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> 遮蔭 (鋪面)</div>
+              <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-cyan-400 inline-block"></span> 草地 (其他)</div>
+            </div>
+          </div>
+
+          <!-- 採樣點 Marker 示意 -->
+          <div class="absolute top-1/3 left-1/4 transform -translate-x-1/2 cursor-pointer group" onclick="showPointDetail('A')">
+            <div class="w-6 h-6 bg-red-500/30 border-2 border-red-500 rounded-full flex items-center justify-center animate-ping absolute"></div>
+            <div class="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg z-10 relative">A</div>
+            <div class="hidden group-hover:block absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs p-2 rounded-lg border border-slate-700 whitespace-nowrap shadow-xl z-20">
+              #013 日照鋪面 39.2°C
+            </div>
+          </div>
+
+          <div class="absolute top-1/2 left-2/3 transform -translate-x-1/2 cursor-pointer group" onclick="showPointDetail('B')">
+            <div class="w-6 h-6 bg-emerald-500 text-slate-950 rounded-full flex items-center justify-center text-xs font-bold shadow-lg z-10 relative">B</div>
+            <div class="hidden group-hover:block absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs p-2 rounded-lg border border-slate-700 whitespace-nowrap shadow-xl z-20">
+              #015 樹蔭鋪面 34.0°C
+            </div>
+          </div>
+
+          <div class="absolute bottom-1/4 left-1/2 transform -translate-x-1/2 cursor-pointer group" onclick="showPointDetail('C')">
+            <div class="w-6 h-6 bg-cyan-400 text-slate-950 rounded-full flex items-center justify-center text-xs font-bold shadow-lg z-10 relative">C</div>
+            <div class="hidden group-hover:block absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs p-2 rounded-lg border border-slate-700 whitespace-nowrap shadow-xl z-20">
+              #014 日照草地 32.6°C
+            </div>
+          </div>
+
+          <div class="text-center text-xs text-slate-500 z-10 mt-auto">
+            (地圖模擬視窗：請點擊地標 A, B, C 查看詳細採樣數據)
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 頁面 3: 數據紀錄表單 (GPS 自動導入) -->
+    <section id="page-record" class="hidden max-w-2xl mx-auto space-y-6">
+      <div class="bg-slate-800 p-6 md:p-8 rounded-3xl border border-slate-700 shadow-2xl space-y-6">
+        <div class="border-b border-slate-700 pb-4 flex justify-between items-center">
+          <div>
+            <h2 class="text-xl font-bold text-white">新增採樣紀錄</h2>
+            <p class="text-xs text-slate-400 mt-0.5">系統已自動寫入當前 GPS 位置座標</p>
+          </div>
+          <span class="bg-emerald-500/20 text-emerald-400 text-xs px-3 py-1 rounded-full border border-emerald-500/30 font-bold">
+            <i class="fa-solid fa-satellite-dish"></i> GPS 已連線
+          </span>
+        </div>
+
+        <!-- GPS 資訊面板 -->
+        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+          <div>
+            <div class="text-slate-400">📍 GPS 位置 (自動取得)</div>
+            <div class="font-mono text-slate-200 mt-1">緯度: 25.1750° N | 經度: 121.4480° E (精度 ±5 m)</div>
+          </div>
+          <button class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-300 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+            <i class="fa-solid fa-camera"></i> 上傳照片
+          </button>
+        </div>
+
+        <!-- 表單內容 -->
+        <form id="recordForm" onsubmit="saveRecord(event)" class="space-y-5 text-sm">
+          <!-- 地表材質 -->
+          <div>
+            <label class="block text-slate-300 font-bold mb-2">地表材質</label>
+            <div class="grid grid-cols-4 gap-2">
+              <label class="bg-slate-900 p-2.5 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-emerald-500 transition">
+                <input type="radio" name="material" value="水泥/磚面" checked class="accent-emerald-500"> 水泥/磚面
+              </label>
+              <label class="bg-slate-900 p-2.5 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-emerald-500 transition">
+                <input type="radio" name="material" value="草地" class="accent-emerald-500"> 草地
+              </label>
+              <label class="bg-slate-900 p-2.5 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-emerald-500 transition">
+                <input type="radio" name="material" value="土壤" class="accent-emerald-500"> 土壤
+              </label>
+              <label class="bg-slate-900 p-2.5 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-emerald-500 transition">
+                <input type="radio" name="material" value="其他" class="accent-emerald-500"> 其他
+              </label>
+            </div>
+          </div>
+
+          <!-- 日照條件 -->
+          <div>
+            <label class="block text-slate-300 font-bold mb-2">日照條件</label>
+            <div class="grid grid-cols-3 gap-2">
+              <label class="bg-slate-900 p-2.5 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-emerald-500 transition">
+                <input type="radio" name="sunlight" value="日照" checked class="accent-emerald-500"> ☀️ 日照
+              </label>
+              <label class="bg-slate-900 p-2.5 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-emerald-500 transition">
+                <input type="radio" name="sunlight" value="部分遮蔭" class="accent-emerald-500"> ⛅ 部分遮蔭
+              </label>
+              <label class="bg-slate-900 p-2.5 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-emerald-500 transition">
+                <input type="radio" name="sunlight" value="樹蔭" class="accent-emerald-500"> 🌳 樹蔭
+              </label>
+            </div>
+          </div>
+
+          <!-- 3 次測量溫度計算 -->
+          <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-3">
+            <label class="block text-slate-300 font-bold">測量溫度 (°C)</label>
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <span class="text-xs text-slate-400 block mb-1">第 1 次</span>
+                <input type="number" step="0.1" id="temp1" value="38.2" oninput="calcAvgTemp()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:border-emerald-500 outline-none">
+              </div>
+              <div>
+                <span class="text-xs text-slate-400 block mb-1">第 2 次</span>
+                <input type="number" step="0.1" id="temp2" value="38.5" oninput="calcAvgTemp()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:border-emerald-500 outline-none">
+              </div>
+              <div>
+                <span class="text-xs text-slate-400 block mb-1">第 3 次</span>
+                <input type="number" step="0.1" id="temp3" value="38.1" oninput="calcAvgTemp()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:border-emerald-500 outline-none">
+              </div>
+            </div>
+            <!-- 自動算出的平均溫度卡片 -->
+            <div class="bg-amber-500/20 border border-amber-500/40 p-3 rounded-xl flex justify-between items-center mt-2">
+              <span class="text-amber-300 font-bold text-xs">平均溫度 (自動計算)：</span>
+              <span id="avg-temp-display" class="text-2xl font-black font-mono text-amber-400">38.3 °C</span>
+            </div>
+          </div>
+
+          <!-- 天氣與備註 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-slate-300 font-bold mb-1.5 text-xs">天氣狀況</label>
+              <select id="weather" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 outline-none">
+                <option value="晴">☀️ 晴朗</option>
+                <option value="多雲">⛅ 多雲</option>
+                <option value="陰">☁️ 陰天</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-slate-300 font-bold mb-1.5 text-xs">觀察備註</label>
+              <input type="text" id="notes" placeholder="例如：附近有樹木、磚面較暗..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 text-xs outline-none">
+            </div>
+          </div>
+
+          <!-- 表單按鈕 -->
+          <div class="flex justify-end space-x-3 pt-3">
+            <button type="button" onclick="switchTab('map')" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold px-5 py-2.5 rounded-xl transition">
+              取消
+            </button>
+            <button type="submit" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-6 py-2.5 rounded-xl transition shadow-lg">
+              儲存紀錄
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- 頁面 4: 資料分析 (圖表與列表) -->
+    <section id="page-analysis" class="hidden space-y-6">
+      <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl space-y-4">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-chart-column text-emerald-400"></i>
+          不同條件的地表溫度比較（平均值）
+        </h2>
+        <!-- Chart.js 統計柱狀圖 -->
+        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+          <canvas id="analysisChart" height="120"></canvas>
+        </div>
+      </div>
+
+      <!-- 採樣紀錄列表表格 -->
+      <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl space-y-4">
+        <h3 class="text-lg font-bold text-white">採樣紀錄列表</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-900 text-slate-400 border-b border-slate-700">
+              <tr>
+                <th class="p-3">編號</th>
+                <th class="p-3">材質</th>
+                <th class="p-3">條件</th>
+                <th class="p-3">平均溫度</th>
+                <th class="p-3">經度</th>
+                <th class="p-3">緯度</th>
+                <th class="p-3">時間</th>
+              </tr>
+            </thead>
+            <tbody id="record-table-body" class="divide-y divide-slate-700/60 text-slate-300">
+              <!-- JavaScript 動態寫入數據 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 頁面 5: 互動教材 (學習與測驗) -->
+    <section id="page-learn" class="hidden space-y-6">
+      <!-- 頁籤導覽 -->
+      <div class="flex border-b border-slate-700 space-x-4">
+        <button id="learn-tab-1" onclick="switchLearnTab(1)" class="pb-3 text-sm font-bold border-b-2 border-emerald-400 text-emerald-400">概念學習</button>
+        <button id="learn-tab-2" onclick="switchLearnTab(2)" class="pb-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200">互動問答</button>
+        <button id="learn-tab-3" onclick="switchLearnTab(3)" class="pb-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200">探究任務</button>
+      </div>
+
+      <!-- 概念學習卡片 -->
+      <div id="learn-content-1" class="bg-slate-800 p-6 md:p-8 rounded-3xl border border-slate-700 space-y-6">
+        <h2 class="text-2xl font-bold text-white text-center">認識地表溫度</h2>
+        <p class="text-center text-slate-300 text-sm max-w-xl mx-auto">
+          地表溫度是地面表面的溫度，會受到<strong>太陽日照</strong>、<strong>樹木遮蔭</strong>與<strong>地表材質（如水泥磚面 vs 綠地草坪）</strong>的深刻影響。
+        </p>
+
+        <!-- 圖解示意卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+          <div class="bg-slate-900 border border-red-500/30 p-6 rounded-2xl text-center space-y-3">
+            <div class="text-5xl">☀️</div>
+            <h3 class="font-bold text-red-400 text-lg">日照鋪面較熱</h3>
+            <p class="text-xs text-slate-400">水泥與磚面容易大量吸收太陽輻射，地表溫度迅速升高。</p>
+          </div>
+          <div class="bg-slate-900 border border-emerald-500/30 p-6 rounded-2xl text-center space-y-3">
+            <div class="text-5xl">🌳</div>
+            <h3 class="font-bold text-emerald-400 text-lg">樹蔭鋪面較涼</h3>
+            <p class="text-xs text-slate-400">樹冠檔下直接照射的陽光，有效降低地表熱積蓄。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 互動問答內容 -->
+      <div id="learn-content-2" class="hidden bg-slate-800 p-6 rounded-3xl border border-slate-700 space-y-4">
+        <h3 class="font-bold text-white text-lg">觀念小測驗</h3>
+        <p class="text-xs text-slate-400">請問紅外線測溫槍主要量測的項目為何？</p>
+        <div class="space-y-2 text-xs">
+          <button onclick="quizFeedback(this, false)" class="w-full p-3 text-left bg-slate-900 hover:bg-slate-700 rounded-xl border border-slate-700 transition">A. 大氣環境的空氣溫度</button>
+          <button onclick="quizFeedback(this, true)" class="w-full p-3 text-left bg-slate-900 hover:bg-slate-700 rounded-xl border border-slate-700 transition">B. 地表表面的實質溫度</button>
+        </div>
+      </div>
+
+      <!-- 探究任務內容 -->
+      <div id="learn-content-3" class="hidden bg-slate-800 p-6 rounded-3xl border border-slate-700 space-y-3 text-sm">
+        <h3 class="font-bold text-white text-lg">探究任務說明</h3>
+        <p class="text-slate-300">請前往淡江校園中的日照水泥區、樹蔭區與草地，分別完成 3 筆採樣紀錄並進行圖表分析解讀！</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 底欄 -->
+  <footer class="bg-slate-950 p-4 border-t border-slate-800 text-center text-xs text-slate-500">
+    校園熱搜隊 數位紀錄工具與互動教材系統 | 淡江大學淡水校園
+  </footer>
+
+  <!-- JavaScript 控制腳本 -->
+  <script>
+    // 採樣資料庫陣列 (對應設計圖)
+    const records = [
+      { id: '#013', material: '鋪面', sunlight: '日照', avg: 39.2, lng: '25.1750', lat: '121.4482', time: '10:32' },
+      { id: '#014', material: '草地', sunlight: '日照', avg: 32.6, lng: '25.1748', lat: '121.4479', time: '10:40' },
+      { id: '#015', material: '樹蔭鋪面', sunlight: '樹蔭', avg: 34.0, lng: '25.1753', lat: '121.4491', time: '10:55' }
+    ];
+
+    // 分頁切換核心邏輯
+    function switchTab(tabId) {
+      const pages = ['home', 'map', 'record', 'analysis', 'learn'];
+      pages.forEach(p => {
+        document.getElementById(`page-${p}`).classList.add('hidden');
+        document.getElementById(`nav-${p}`).classList.remove('nav-active');
+        document.getElementById(`nav-${p}`).classList.add('text-slate-300');
+      });
+
+      document.getElementById(`page-${tabId}`).classList.remove('hidden');
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      activeNav.classList.add('nav-active');
+      activeNav.classList.remove('text-slate-300');
+
+      if(tabId === 'analysis') {
+        renderAnalysisTable();
+        initChart();
+      }
+    }
+
+    // 計算 3 次平均溫度
+    function calcAvgTemp() {
+      const t1 = parseFloat(document.getElementById('temp1').value) || 0;
+      const t2 = parseFloat(document.getElementById('temp2').value) || 0;
+      const t3 = parseFloat(document.getElementById('temp3').value) || 0;
+      const avg = ((t1 + t2 + t3) / 3).toFixed(1);
+      document.getElementById('avg-temp-display').innerText = `${avg} °C`;
+    }
+
+    // 儲存紀錄表單處理
+    function saveRecord(e) {
+      e.preventDefault();
+      const material = document.querySelector('input[name="material"]:checked').value;
+      const sunlight = document.querySelector('input[name="sunlight"]:checked').value;
+      const t1 = parseFloat(document.getElementById('temp1').value) || 0;
+      const t2 = parseFloat(document.getElementById('temp2').value) || 0;
+      const t3 = parseFloat(document.getElementById('temp3').value) || 0;
+      const avg = ((t1 + t2 + t3) / 3).toFixed(1);
+
+      const now = new Date();
+      const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const newId = `#0${records.length + 13}`;
+
+      records.push({
+        id: newId,
+        material: material,
+        sunlight: sunlight,
+        avg: parseFloat(avg),
+        lng: '25.1750',
+        lat: '121.4480',
+        time: timeStr
+      });
+
+      alert(`紀錄儲存成功！平均溫度為 ${avg} °C`);
+      switchTab('analysis');
+    }
+
+    // 渲染採樣列表
+    function renderAnalysisTable() {
+      const tbody = document.getElementById('record-table-body');
+      tbody.innerHTML = '';
+      records.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-700/40 transition';
+        tr.innerHTML = `
+          <td class="p-3 font-mono text-emerald-400 font-bold">${r.id}</td>
+          <td class="p-3">${r.material}</td>
+          <td class="p-3">${r.sunlight}</td>
+          <td class="p-3 font-mono font-bold text-amber-400">${r.avg} °C</td>
+          <td class="p-3 font-mono">${r.lng}</td>
+          <td class="p-3 font-mono">${r.lat}</td>
+          <td class="p-3 font-mono text-slate-400">${r.time}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 初始化 Chart.js 統計圖表 (對應設計圖)
+    let analysisChart = null;
+    function initChart() {
+      const ctx = document.getElementById('analysisChart').getContext('2d');
+      if (analysisChart) analysisChart.destroy();
+
+      analysisChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['鋪面 (n=12)', '草地 (n=10)', '樹蔭鋪面 (n=9)'],
+          datasets: [{
+            label: '平均地表溫度 (°C)',
+            data: [39.1, 32.6, 34.0],
+            backgroundColor: ['#ef4444', '#84cc16', '#38bdf8'],
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true, max: 45, grid: { color: '#334155' } },
+            x: { grid: { display: false } }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    // 教材 sub-tab 切換
+    function switchLearnTab(num) {
+      for(let i=1; i<=3; i++) {
+        document.getElementById(`learn-content-${i}`).classList.add('hidden');
+        const btn = document.getElementById(`learn-tab-${i}`);
+        btn.className = 'pb-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200';
+      }
+      document.getElementById(`learn-content-${num}`).classList.remove('hidden');
+      document.getElementById(`learn-tab-${num}`).className = 'pb-3 text-sm font-bold border-b-2 border-emerald-400 text-emerald-400';
+    }
+
+    function quizFeedback(btn, isCorrect) {
+      if(isCorrect) {
+        btn.className = 'w-full p-3 text-left bg-emerald-900/60 border border-emerald-500 text-emerald-200 rounded-xl text-xs font-bold';
+      } else {
+        btn.className = 'w-full p-3 text-left bg-rose-900/60 border border-rose-500 text-rose-200 rounded-xl text-xs font-bold';
+      }
+    }
+
+    function updateGPS() {
+      alert('GPS 位置已更新！ (緯度 25.1750° N, 經度 121.4480° E)');
+    }
+
+    function showPointDetail(point) {
+      switchTab('analysis');
+    }
+  </script>
+</body>
+</html>
